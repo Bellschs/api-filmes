@@ -22,7 +22,7 @@ public class MyApiKeyFilter implements ContainerRequestFilter {
         if (apiKey == null || !apiKey.equals(configuredApiKey)) {
             requestContext.abortWith(
                     Response.status(Response.Status.UNAUTHORIZED)
-                            .entity("Chave de API inválida ou ausente")
+                            .entity("Chave de API inválida ou ausente!")
                             .build()
             );
         }
