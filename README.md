@@ -15,123 +15,84 @@ A API possui três entidades principais:
 
 ---
 
-## 🔧 Funcionalidades
+## 🔐 Recursos Avançados
 
-Cada entidade pode ser manipulada por meio de cinco operações básicas (**CRUD**):
+Esta API inclui recursos modernos de segurança, validação e controle de uso:
 
-- **POST** - Criar (Create) ➕
-- **GET** - Ler (Read) 📖
-- **PUT** - Atualizar (Update) 🔄
-- **DELETE** - Deletar (Delete) ❌
+- **🔒 Idempotência**: Evita criação duplicada em requisições POST com `x-idempotency-key`.
+- **🔐 Autenticação com API Key**: Uso obrigatório do header `x-api-key`.
+- **📶 Rate Limiting**: Limite de requisições com resposta 429 em excesso.
+- **🌐 CORS Configurado**: Suporte completo a requisições de diferentes origens.
+- **🧪 Bean Validation**: Validação de dados com mensagens claras.
+- **🔥 Tratamento Global de Erros**: Mensagens estruturadas em JSON com status e descrição.
+- **📦 Versionamento**: Endpoints também disponíveis em `/api/v1/...` para evoluções futuras.
 
 ---
 
 ## 🌐 Endpoints
 
-A seguir, estão os **endpoints** disponíveis para cada entidade:
-
 ### 1. **Filmes** 🎬
 
-- **GET** `/filmes`  
-  Retorna todos os filmes.
-  
-- **POST** `/filmes`  
-  Cria um novo filme.
-  
-- **GET** `/filmes/{id}`  
-  Retorna um filme específico pelo ID.
-  
-- **PUT** `/filmes/{id}`  
-  Atualiza os dados de um filme específico pelo ID.
-  
-- **DELETE** `/filmes/{id}`  
-  Deleta um filme específico pelo ID.
+- **GET** `/filmes`
+- **POST** `/filmes` (usa `x-idempotency-key`)
+- **GET** `/filmes/{id}`
+- **PUT** `/filmes/{id}`
+- **DELETE** `/filmes/{id}`
 
-#### Campos de um Filme:
+Também disponível como `/api/v1/filmes`
+
+#### Campos:
 - `id`: Identificador único do filme. 🆔
 - `titulo`: Título do filme. 🎞️
-- `diretorId`: ID do diretor do filme. 🎬
-- `generoId`: ID do gênero do filme. 🏷️
-- `anoLancamento`: Ano de lançamento do filme. 📅
-
-#### Dados 🎲:
-
-| Parâmetro   | Tipo       | Descrição                           |
-| :---------- | :--------- | :---------------------------------- |
-| `id` | `int` | **Obrigatório**. id do filme |
-| `titulo` | `string` | **Obrigatório**. nome do filme |
-| `diretorId` | `int` | **Obrigatório**. id do diretor |
-| `generoId` | `int` | **Obrigatório**. id do gênero |
-| `anoLancamento` | `int` | **Obrigatório**. ano de lançamento do filme |
----
+- `diretorId`: ID do diretor. 🎬
+- `generoId`: ID do gênero. 🏷️
+- `anoLancamento`: Ano de lançamento. 📅
 
 ### 2. **Diretores** 🎥
 
-- **GET** `/diretores`  
-  Retorna todos os diretores.
-  
-- **POST** `/diretores`  
-  Cria um novo diretor.
-  
-- **GET** `/diretores/{id}`  
-  Retorna um diretor específico pelo ID.
-  
-- **PUT** `/diretores/{id}`  
-  Atualiza os dados de um diretor específico pelo ID.
-  
-- **DELETE** `/diretores/{id}`  
-  Deleta um diretor específico pelo ID.
+- **GET** `/diretores`
+- **POST** `/diretores` (usa `x-idempotency-key`)
+- **GET** `/diretores/{id}`
+- **PUT** `/diretores/{id}`
+- **DELETE** `/diretores/{id}`
 
-#### Campos de um Diretor:
-- `id`: Identificador único do diretor. 🆔
+Também disponível como `/api/v1/diretores`
+
+#### Campos:
+- `id`: Identificador único. 🆔
 - `nome`: Nome do diretor. 👤
-
-#### Dados 🎲:
-
-| Parâmetro   | Tipo       | Descrição                           |
-| :---------- | :--------- | :---------------------------------- |
-| `id` | `int` | **Obrigatório**. id do diretor |
-| `nome` | `string` | **Obrigatório**. nome do diretor |
-
----
 
 ### 3. **Gêneros** 🎭
 
-- **GET** `/genero`  
-  Retorna todos os gêneros.
-  
-- **POST** `/genero`  
-  Cria um novo gênero.
-  
-- **GET** `/genero/{id}`  
-  Retorna um gênero específico pelo ID.
-  
-- **PUT** `/genero/{id}`  
-  Atualiza os dados de um gênero específico pelo ID.
-  
-- **DELETE** `/genero/{id}`  
-  Deleta um gênero específico pelo ID.
+- **GET** `/genero`
+- **POST** `/genero` (usa `x-idempotency-key`)
+- **GET** `/genero/{id}`
+- **PUT** `/genero/{id}`
+- **DELETE** `/genero/{id}`
 
-#### Campos de um Gênero:
-- `id`: Identificador único do gênero. 🆔
+Também disponível como `/api/v1/genero`
+
+#### Campos:
+- `id`: Identificador único. 🆔
 - `nome`: Nome do gênero. 🏷️
 
-#### Dados 🎲:
-
-| Parâmetro   | Tipo       | Descrição                           |
-| :---------- | :--------- | :---------------------------------- |
-| `id` | `int` | **Obrigatório**. id do gênero |
-| `nome` | `string` | **Obrigatório**. nome do gênero |
 ---
 
-## 📝 Exemplos de Uso
+## 📝 Exemplos de Requisição
 
-### 1. Criar um Filme
+### Criar um Diretor (com idempotência e API Key)
+```http
+POST /diretores
+x-api-key: sua-chave
+x-idempotency-key: 123e4567
+Content-Type: application/json
 
-**Endpoint:** `POST /filmes`
+{
+  "nome": "Christopher Nolan"
+}
+```
 
-**Exemplo de corpo da requisição:**
-
+### Criar um Filme
 ```json
 {
   "titulo": "Inception",
@@ -139,72 +100,10 @@ A seguir, estão os **endpoints** disponíveis para cada entidade:
   "generoId": 1,
   "anoLancamento": 2010
 }
-`````
+```
 
-### 2. Obter Todos os Filmes
+---
 
-**Endpoint:** `GET /filmes`
-
-**Exemplo de corpo da requisição:**
-
-```json
-[
-  {
-    "id": 1,
-    "titulo": "Inception",
-    "diretorId": 1,
-    "generoId": 1,
-    "anoLancamento": 2010
-  },
-  {
-    "id": 2,
-    "titulo": "Interstellar",
-    "diretorId": 1,
-    "generoId": 2,
-    "anoLancamento": 2014
-  }
-]
-
-`````
-### 3. Obter um Filme Específico
-
-**Endpoint:** `GET /filmes/{id}`
-
-**Exemplo de corpo da requisição:**
-
-```json
- {
-    "id": 1,
-    "titulo": "Inception",
-    "diretorId": 1,
-    "generoId": 1,
-    "anoLancamento": 2010
-  }
-`````
-### 4. Atualizar um Filme
-
-**Endpoint:** `PUT /filmes/{id}`
-
-**Exemplo de corpo da requisição:**
-
-```json
- {
-    "titulo": "Inception 2",
-    "diretorId": 1,
-    "generoId": 1,
-    "anoLancamento": 2022
-  }
-`````
-### 5. Deletar um Filme
-
-**Endpoint:** `DELETE /filmes/{id}`
-
-**Exemplo de corpo da requisição:**
-```json
-{
-  "status": "204 No Content"
-}
-`````
 ## ⚠️ Considerações Finais
 
 Obrigado por usar a API de Filmes! Esperamos que essa documentação tenha ajudado a entender como criar, entender e usar a API. Se tiver alguma dúvida ou se deparar com algum problema, é só chamar.
