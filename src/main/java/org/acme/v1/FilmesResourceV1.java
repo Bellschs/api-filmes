@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.v1;
 
 import io.smallrye.faulttolerance.api.RateLimit;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -6,7 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.acme.config.IdempotencyRecord;
+import org.acme.Filmes;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -15,22 +15,20 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
 import java.util.List;
 
-@Path("/filmes")
+@Path("/api/v1/filmes")  // <- versão via URL aqui!
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "Filmes", description = "Todos os Filmes adicionados")
-public class FilmesResource {
+@Tag(name = "Filmes - v1", description = "Versão 1 da API de filmes")
+public class FilmesResourceV1 {
 
     @GET
     @RateLimit(value = 5, window = 10)
     @Fallback(fallbackMethod = "rateLimitFallback")
-    @Operation(
-            summary = "Listar todos os filmes.",
-            description = "Listar todos os filmes cadastrados"
-    )
+    @Operation(summary = "Listar todos os filmes.", description = "Listar todos os filmes cadastrados")
     public List<Filmes> listarTodos() {
         return Filmes.listAll();
     }
@@ -41,14 +39,12 @@ public class FilmesResource {
 
     @GET
     @Path("/{id}")
-    @Operation(summary = "Buscar filme por ID", description = "Retorna os dados de um filme pelo ID.", operationId = "getFilmeById")
+    @Operation(summary = "Buscar filme por ID", description = "Retorna os dados de um filme pelo ID.")
     @APIResponses(value = {
             @APIResponse(responseCode = "200", description = "Filme encontrado", content = @Content(schema = @Schema(implementation = Filmes.class))),
             @APIResponse(responseCode = "404", description = "Filme não encontrado")
     })
-    public Filmes buscarPorId(
-            @Parameter(description = "ID do filme", required = true)
-            @PathParam("id") Long id) {
+    public Filmes buscarPorId(@Parameter(description = "ID do filme", required = true) @PathParam("id") Long id) {
         Filmes filme = Filmes.findById(id);
         if (filme == null) {
             throw new NotFoundException("Filme não encontrado: " + id);
@@ -58,30 +54,16 @@ public class FilmesResource {
 
     @POST
     @Transactional
-    @Operation(summary = "Adiciona um novo filme com idempotência", description = "Cadastra um novo filme no sistema se a chave de idempotência for única.")
+    @Operation(summary = "Adiciona um novo filme", description = "Cadastra um novo filme no sistema.")
     @APIResponses(value = {
             @APIResponse(responseCode = "201", description = "Filme criado com sucesso"),
-            @APIResponse(responseCode = "409", description = "Requisição duplicada (mesma idempotency-key)"),
-            @APIResponse(responseCode = "400", description = "Chave de idempotência ausente")
+            @APIResponse(responseCode = "409", description = "Filme já existe com esse título e ano")
     })
-    public Response criar(@HeaderParam("x-idempotency-key") String key, Filmes filme) {
-        if (key == null || key.isBlank()) {
-            return Response.status(400).entity("Chave de idempotência (x-idempotency-key) é obrigatória").build();
-        }
-
-        boolean chaveUsada = IdempotencyRecord.find("keyRecord", key).firstResultOptional().isPresent();
-        if (chaveUsada) {
-            return Response.status(409).entity("Esta requisição já foi processada anteriormente").build();
-        }
-
+    public Response criar(Filmes filme) {
         boolean jaExiste = Filmes.find("titulo = ?1 and anoLancamento = ?2", filme.titulo, filme.anoLancamento).firstResultOptional().isPresent();
         if (jaExiste) {
             return Response.status(409).entity("Filme já existe com esse título e ano").build();
         }
-
-        IdempotencyRecord record = new IdempotencyRecord();
-        record.keyRecord = key;
-        record.persist();
 
         filme.persist();
         return Response.status(Response.Status.CREATED).entity(filme).build();
@@ -95,9 +77,7 @@ public class FilmesResource {
             @APIResponse(responseCode = "200", description = "Filme atualizado com sucesso"),
             @APIResponse(responseCode = "404", description = "Filme não encontrado")
     })
-    public Filmes atualizar(
-            @Parameter(description = "ID do filme", required = true)
-            @PathParam("id") Long id, Filmes filme) {
+    public Filmes atualizar(@Parameter(description = "ID do filme", required = true) @PathParam("id") Long id, Filmes filme) {
         Filmes entidade = Filmes.findById(id);
         if (entidade == null) {
             throw new NotFoundException("Filme não encontrado: " + id);
@@ -119,9 +99,7 @@ public class FilmesResource {
             @APIResponse(responseCode = "204", description = "Filme removido com sucesso"),
             @APIResponse(responseCode = "404", description = "Filme não encontrado")
     })
-    public Response excluir(
-            @Parameter(description = "ID do filme", required = true)
-            @PathParam("id") Long id) {
+    public Response excluir(@Parameter(description = "ID do filme", required = true) @PathParam("id") Long id) {
         boolean excluido = Filmes.deleteById(id);
         if (excluido) {
             return Response.noContent().build();

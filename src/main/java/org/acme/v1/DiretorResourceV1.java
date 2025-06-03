@@ -1,4 +1,4 @@
-package org.acme;
+package org.acme.v1;
 
 import io.smallrye.faulttolerance.api.RateLimit;
 import jakarta.enterprise.context.ApplicationScoped;
@@ -6,7 +6,7 @@ import jakarta.transaction.Transactional;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
-import org.acme.config.IdempotencyRecord;
+import org.acme.Diretor;
 import org.eclipse.microprofile.faulttolerance.Fallback;
 import org.eclipse.microprofile.openapi.annotations.Operation;
 import org.eclipse.microprofile.openapi.annotations.media.Content;
@@ -15,14 +15,15 @@ import org.eclipse.microprofile.openapi.annotations.parameters.Parameter;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponse;
 import org.eclipse.microprofile.openapi.annotations.responses.APIResponses;
 import org.eclipse.microprofile.openapi.annotations.tags.Tag;
+
 import java.util.List;
 
-@Path("/diretores")
+@Path("/api/v1/diretores")
 @ApplicationScoped
 @Produces(MediaType.APPLICATION_JSON)
 @Consumes(MediaType.APPLICATION_JSON)
-@Tag(name = "Diretores", description = "Todos os Diretores dos Filmes")
-public class DiretorResource {
+@Tag(name = "Diretores - v1", description = "Versão 1 da API de diretores de filmes")
+public class DiretorResourceV1 {
 
     @GET
     @RateLimit(value = 5, window = 10)
@@ -55,30 +56,16 @@ public class DiretorResource {
 
     @POST
     @Transactional
-    @Operation(summary = "Criar novo diretor com idempotência", description = "Cadastra um novo diretor no sistema se a chave de idempotência for única.")
+    @Operation(summary = "Criar novo diretor", description = "Cadastra um novo diretor no sistema.")
     @APIResponses(value = {
             @APIResponse(responseCode = "201", description = "Diretor criado com sucesso"),
-            @APIResponse(responseCode = "409", description = "Requisição duplicada (mesma idempotency-key)"),
-            @APIResponse(responseCode = "400", description = "Chave de idempotência ausente")
+            @APIResponse(responseCode = "409", description = "Diretor já existe")
     })
-    public Response criar(@HeaderParam("x-idempotency-key") String key, Diretor diretor) {
-        if (key == null || key.isBlank()) {
-            return Response.status(400).entity("Chave de idempotência (x-idempotency-key) é obrigatória").build();
-        }
-
-        boolean chaveUsada = IdempotencyRecord.find("keyRecord", key).firstResultOptional().isPresent();
-        if (chaveUsada) {
-            return Response.status(409).entity("Esta requisição já foi processada anteriormente").build();
-        }
-
+    public Response criar(Diretor diretor) {
         boolean jaExiste = Diretor.find("nome", diretor.nome).firstResultOptional().isPresent();
         if (jaExiste) {
             return Response.status(409).entity("Diretor com esse nome já existe").build();
         }
-
-        IdempotencyRecord record = new IdempotencyRecord();
-        record.keyRecord = key;
-        record.persist();
 
         diretor.persist();
         return Response.status(Response.Status.CREATED).entity(diretor).build();
