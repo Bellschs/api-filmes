@@ -3,6 +3,7 @@ package org.acme;
 import io.smallrye.faulttolerance.api.RateLimit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -64,7 +65,7 @@ public class FilmesResource {
             @APIResponse(responseCode = "409", description = "Requisição duplicada (mesma idempotency-key)"),
             @APIResponse(responseCode = "400", description = "Chave de idempotência ausente")
     })
-    public Response criar(@HeaderParam("x-idempotency-key") String key, Filmes filme) {
+    public Response criar(@HeaderParam("x-idempotency-key") String key, @Valid Filmes filme) {
         if (key == null || key.isBlank()) {
             return Response.status(400).entity("Chave de idempotência (x-idempotency-key) é obrigatória").build();
         }
@@ -97,7 +98,7 @@ public class FilmesResource {
     })
     public Filmes atualizar(
             @Parameter(description = "ID do filme", required = true)
-            @PathParam("id") Long id, Filmes filme) {
+            @PathParam("id") Long id, @Valid Filmes filme) {
         Filmes entidade = Filmes.findById(id);
         if (entidade == null) {
             throw new NotFoundException("Filme não encontrado: " + id);
