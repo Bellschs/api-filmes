@@ -3,6 +3,7 @@ package org.acme;
 import io.smallrye.faulttolerance.api.RateLimit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -61,7 +62,7 @@ public class DiretorResource {
             @APIResponse(responseCode = "409", description = "Requisição duplicada (mesma idempotency-key)"),
             @APIResponse(responseCode = "400", description = "Chave de idempotência ausente")
     })
-    public Response criar(@HeaderParam("x-idempotency-key") String key, Diretor diretor) {
+    public Response criar(@HeaderParam("x-idempotency-key") String key, @Valid Diretor diretor) {
         if (key == null || key.isBlank()) {
             return Response.status(400).entity("Chave de idempotência (x-idempotency-key) é obrigatória").build();
         }
@@ -94,7 +95,7 @@ public class DiretorResource {
     })
     public Diretor atualizar(
             @Parameter(description = "ID do diretor", required = true)
-            @PathParam("id") Long id, Diretor diretor) {
+            @PathParam("id") Long id, @Valid Diretor diretor) {
         Diretor entidade = Diretor.findById(id);
         if (entidade == null) {
             throw new NotFoundException("Diretor não encontrado: " + id);
