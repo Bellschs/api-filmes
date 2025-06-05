@@ -3,6 +3,7 @@ package org.acme;
 import io.smallrye.faulttolerance.api.RateLimit;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.transaction.Transactional;
+import jakarta.validation.Valid;
 import jakarta.ws.rs.*;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
@@ -61,7 +62,7 @@ public class GeneroResource {
             @APIResponse(responseCode = "409", description = "Requisição duplicada (mesma idempotency-key) ou gênero já existe"),
             @APIResponse(responseCode = "400", description = "Chave de idempotência ausente")
     })
-    public Response criar(@HeaderParam("x-idempotency-key") String key, Genero genero) {
+    public Response criar(@HeaderParam("x-idempotency-key") String key, @Valid Genero genero) {
         if (key == null || key.isBlank()) {
             return Response.status(400).entity("Chave de idempotência (x-idempotency-key) é obrigatória").build();
         }
@@ -94,7 +95,7 @@ public class GeneroResource {
     })
     public Genero atualizar(
             @Parameter(description = "ID do gênero", required = true)
-            @PathParam("id") Long id, Genero genero) {
+            @PathParam("id") Long id, @Valid Genero genero) {
         Genero entidade = Genero.findById(id);
         if (entidade == null) {
             throw new NotFoundException("Gênero não encontrado: " + id);
