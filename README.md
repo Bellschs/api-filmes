@@ -84,7 +84,7 @@ Também disponível como `/api/v1/genero`
 ```http
 POST /diretores
 x-api-key: sua-chave
-x-idempotency-key: 123e4567
+gx-idempotency-key: 123e4567
 Content-Type: application/json
 
 {
@@ -93,7 +93,12 @@ Content-Type: application/json
 ```
 
 ### Criar um Filme
-```json
+```http
+POST /filmes
+x-api-key: sua-chave
+gx-idempotency-key: filme-123
+Content-Type: application/json
+
 {
   "titulo": "Inception",
   "diretorId": 1,
@@ -102,10 +107,28 @@ Content-Type: application/json
 }
 ```
 
+### Erro de validação
+```json
+{
+  "erro": "Erro ao processar a requisição",
+  "mensagem": "O nome do diretor é obrigatório",
+  "status": 400
+}
+```
+
+### Erro de autenticação (API Key inválida)
+```json
+{
+  "erro": "Erro ao processar a requisição",
+  "mensagem": "Chave de API inválida ou ausente",
+  "status": 401
+}
+```
+
 ---
 
 ## ⚠️ Considerações Finais
 
-Obrigado por usar a API de Filmes! Esperamos que essa documentação tenha ajudado a entender como criar, entender e usar a API. Se tiver alguma dúvida ou se deparar com algum problema, é só chamar.
+Obrigado por usar a API de Filmes! Se tiver dúvidas ou encontrar problemas, fique à vontade para abrir uma issue ou entrar em contato.
 
-Divirta-se explorando todos os recursos! 🎬
+Explore com responsabilidade e divirta-se! 🎬✨
